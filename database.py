@@ -15,15 +15,16 @@ cur = conn.cursor()
 # Ha due colonne:
 #   id   -> numero intero, chiave primaria: unico per ogni riga,
 #           SQLite lo assegna da solo (1, 2, 3...)
-#   nome -> testo, obbligatorio (NOT NULL = non può essere vuoto)
-cur.execute("CREATE TABLE IF NOT EXISTS argomenti (id INTEGER PRIMARY KEY, nome TEXT NOT NULL)")
+#   nome -> testo, obbligatorio (NOT NULL = non può essere vuoto) e UNIQUE (non possono esserci due argomenti uguali).
+cur.execute("CREATE TABLE IF NOT EXISTS argomenti (id INTEGER PRIMARY KEY, nome TEXT NOT NULL UNIQUE)")
 
 # Inserisco due righe nella tabella, riempiendo solo la colonna "nome".
+# se c’è già, lascia stare e va avanti con OR IGNORE
 # L'id non lo scrivo: lo mette SQLite.
 # Il testo dentro SQL va tra apici singoli ' '
 # perché le virgolette doppie " " delimitano già la stringa Python
-cur.execute("INSERT INTO argomenti (nome) VALUES ('SQL')")
-cur.execute("INSERT INTO argomenti (nome) VALUES ('Java OOP')")
+cur.execute("INSERT OR IGNORE INTO argomenti (nome) VALUES ('SQL')")
+cur.execute("INSERT OR IGNORE INTO argomenti (nome) VALUES ('Java OOP')")
 
 # Salvo davvero le modifiche nel file del database.
 # Senza commit, le righe inserite andrebbero perse alla chiusura
