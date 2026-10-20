@@ -106,7 +106,63 @@ def mostra_domande(cur):
     for riga in righe:
         print(riga)
 
+# ==============================================================
+# FUNZIONE: fai_quiz
+# Fa il quiz su tutte le domande: per ognuna mostra argomento e
+# testo (unendo le tabelle con una JOIN), aspetta la risposta,
+# mostra quella corretta e chiede se era giusta (autovalutazione).
+# Alla fine stampa quante risposte giuste ho dato.
+# ==============================================================
+def fai_quiz(cur):
+    # Leggo le domande con tre colonne, in questo ordine:
+    # testo della domanda, nome dell'argomento, risposta corretta.
+    # La JOIN aggancia a ogni domanda il nome del suo argomento
+    cur.execute("""
+            SELECT domande.testo, argomenti.nome, domande.risposta_corretta
+            FROM domande
+            JOIN argomenti ON domande.argomento_id = argomenti.id
+        """)
 
+    # Prendo tutti i risultati: una lista di tuple da tre elementi,
+    # es. ('left join?', 'SQL', 'prende tutte le righe...')
+    righe = cur.fetchall()
+
+    # Contatore delle risposte giuste: parte da zero.
+    # Sta FUORI dal ciclo, altrimenti ripartirebbe da zero a ogni domanda
+    giuste = 0
+
+    # Per ogni riga, spacchetto la tupla in tre variabili,
+    # nello stesso ordine delle colonne della SELECT
+    for domanda, argomento, risposta in righe:
+        # Riga vuota per separare una domanda dall'altra
+        print()
+
+        # Mostro la domanda con il suo argomento, es. [SQL] left join?
+        print(f"[{argomento}] {domanda}")
+
+        # Aspetto la risposta. Per ora non la salvo: mi autovaluto
+        input("scrivi la tua risposta: ")
+
+        # Mostro la risposta corretta per confrontarla con la mia
+        print(f"ecco la risposta corretta: {risposta}")
+
+        # Chiedo se avevo risposto giusto.
+        # .strip() toglie gli spazi all'inizio e alla fine,
+        # .lower() trasforma in minuscolo: così anche " S" vale come "s"
+        esito = input("la tua risposta era giusta? (s/n) ").strip().lower()
+
+        # Se ho risposto giusto aumento il contatore, altrimenti no
+        if esito == "s":
+            giuste = giuste + 1
+            print("Bene!")
+        else:
+            print("Da ripassare.")
+
+    # Fuori dal ciclo: stampo il punteggio una volta sola, alla fine.
+    # len(righe) = numero totale di domande
+    print()
+    print(f"Hai risposto giusto a {giuste} domande su {len(righe)}")
+    
 # ==============================================================
 # PROGRAMMA PRINCIPALE
 # Qui il programma parte davvero: le funzioni sopra sono solo
@@ -137,8 +193,8 @@ inserisci_dati(cur)
 # Senza commit, le righe inserite andrebbero perse alla chiusura
 conn.commit()
 
-# Stampo tutte le domande con il loro argomento
-mostra_domande(cur)
+# Avvio il quiz
+fai_quiz(cur)
 
 # Chiudo il collegamento al database: ho finito
 conn.close()
